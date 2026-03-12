@@ -1,5 +1,3 @@
----
-
 # Java Hot Path Benchmark
 
 Este repositorio contiene benchmarks de micro-rendimiento en Java para analizar el impacto real de ciertas "buenas prácticas" en el *hot path* de la aplicación, basándose en experimentos de rendimiento real.
