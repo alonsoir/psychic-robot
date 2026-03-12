@@ -1,0 +1,14 @@
+META-INF/CompilerHints
+com/example/jmh_generated/DispatchBenchmark_jmhType_B1.class
+com/example/DispatchBenchmark$ImplA.class
+com/example/DispatchBenchmark$ImplC.class
+com/example/DispatchBenchmark.class
+com/example/jmh_generated/DispatchBenchmark_jmhType.class
+com/example/DispatchBenchmark$ImplB.class
+com/example/jmh_generated/DispatchBenchmark_jmhType_B2.class
+META-INF/BenchmarkList
+com/example/DispatchBenchmark$Service.class
+com/example/jmh_generated/DispatchBenchmark_monomorphic_jmhTest.class
+com/example/jmh_generated/DispatchBenchmark_jmhType_B3.class
+com/example/jmh_generated/DispatchBenchmark_bimorphic_jmhTest.class
+com/example/jmh_generated/DispatchBenchmark_megamorphic_jmhTest.class

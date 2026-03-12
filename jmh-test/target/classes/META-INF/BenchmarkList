@@ -1,0 +1,3 @@
+JMH S 29 com.example.DispatchBenchmark S 61 com.example.jmh_generated.DispatchBenchmark_bimorphic_jmhTest S 9 bimorphic S 11 AverageTime E A 1 1 1 E I 1 5 E E I 2 10 E E I 1 1 E E E E E E U 11 NANOSECONDS E E 
+JMH S 29 com.example.DispatchBenchmark S 63 com.example.jmh_generated.DispatchBenchmark_megamorphic_jmhTest S 11 megamorphic S 11 AverageTime E A 1 1 1 E I 1 5 E E I 2 10 E E I 1 1 E E E E E E U 11 NANOSECONDS E E 
+JMH S 29 com.example.DispatchBenchmark S 63 com.example.jmh_generated.DispatchBenchmark_monomorphic_jmhTest S 11 monomorphic S 11 AverageTime E A 1 1 1 E I 1 5 E E I 2 10 E E I 1 1 E E E E E E U 11 NANOSECONDS E E 
