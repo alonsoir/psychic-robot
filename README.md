@@ -1,112 +1,86 @@
-Leyendo esta publicación en Medium, me llevé una gran sorpresa. 
-
-https://medium.com/javarevisited/i-removed-3-best-practices-from-my-java-app-performance-improved-instantly-bda04c642a5f
-
-Este repo trata de poner números para que cada uno saque sus conclusiones.
-
-### 1️⃣ `run_jmh_numbers.sh` (nuevo script)
-
-```bash
-#!/bin/bash
-# Script para ejecutar JMH y extraer solo los números de los benchmarks
-# Usa el fat JAR generado con Maven + shade plugin
-
-JMH_JAR="jmh-test/target/perf-jmh-1.0-shaded.jar"
-
-if [ ! -f "$JMH_JAR" ]; then
-    echo "ERROR: No se encontró el fat JAR $JMH_JAR"
-    exit 1
-fi
-
-echo "Ejecutando benchmarks JMH (solo números)..."
-java -jar "$JMH_JAR" -wi 5 -i 5 -f 1 -rf csv -rff jmh-results.csv -q
-
-echo "Resultados exportados a jmh-results.csv"
-echo "Contenido CSV:"
-cat jmh-results.csv | awk -F, '{print $1","$2","$3","$4}'
-```
-
-* Explicación:
-
-  * `-rf csv -rff jmh-results.csv` → genera un CSV limpio.
-  * `-q` → quita logging extra de JMH.
-  * El `awk` imprime solo columnas esenciales: benchmark, modo, iteraciones, score.
-
 ---
 
-### 2️⃣ `README.md`
-
-```markdown
 # Java Hot Path Benchmark
 
-Este repositorio contiene benchmarks de micro rendimiento en Java para estudiar:
+Este repositorio contiene benchmarks de micro-rendimiento en Java para analizar el impacto real de ciertas "buenas prácticas" en el *hot path* de la aplicación, basándose en experimentos de rendimiento real.
 
-- Llamadas a interfaces vs clases concretas.
-- Streams vs bucles inline.
-- Small Methods vs Long Methods.
-- Monomorphic, Bimorphic y Megamorphic dispatch.
+## 🎯 Objetivos del Estudio
 
-## Estructura
-
-```
-
-.
-├── jmh-test              # Benchmark JMH
-├── out                   # Clases compiladas para los benchmarks de Main.java
-├── run_benchmark.sh      # Benchmark rápido sin JMH
-├── run_benchmark_jit.sh  # Benchmark rápido con warmup + JIT
-├── run_jmh_numbers.sh    # Benchmark JMH con exportación CSV de números
-└── src                   # Código fuente
-
-````
-
-### Clases relevantes
-
-- **com.example.perf.Main.java** → benchmark simple de interfaces, streams y tamaño de métodos.  
-- **com.example.perf.user**  
-  - `User`, `UserService`, `UserServiceConcrete`, `UserServiceImpl` → usadas por Main.java para comparar polimorfismo y llamadas concretas.  
-- **com.example.perf.orders**  
-  - `OrderProcessorInline`, `OrderProcessorStreams`, `OrderProcessorSmallMethods`, `OrderProcessorLargeMethods` → comparativa de loops, streams y tamaño de métodos.
-
-- **com.example.DispatchBenchmark.java** → JMH microbenchmark para monomorphic/bimorphic/megamorphic dispatch.
+* **Llamadas a interfaces vs clases concretas**: Impacto del *overhead* de abstracción.
+* **Streams vs bucles inline**: Coste de la programación funcional en Java frente a imperativa clásica.
+* **Small Methods vs Long Methods**: Influencia del tamaño del método en el *inlining* de la JIT.
+* **Monomorphic, Bimorphic y Megamorphic dispatch**: Cómo penaliza el polimorfismo según el número de implementaciones.
 
 ---
 
-## Compilación
+## 📂 Estructura del Proyecto
 
-1. **Main.java + perf scripts** (sin JMH):
+```text
+.
+├── jmh-test           # Configuración y microbenchmarks JMH
+├── out                # Clases compiladas para los benchmarks manuales
+├── run_benchmark.sh   # Benchmark rápido (baseline)
+├── run_benchmark_jit.sh # Benchmark con warmup + JIT
+├── run_jmh_numbers.sh # Script de automatización JMH con exportación CSV
+└── src                # Código fuente principal
+
+```
+
+### Clases Relevantes
+
+* **`com.example.perf.Main.java`**: Punto de entrada para tests rápidos de interfaces, streams y tamaño de métodos.
+* **`com.example.perf.user`**: Contiene `User`, `UserService`, y sus implementaciones para comparar polimorfismo vs. llamadas directas.
+* **`com.example.perf.orders`**: Procesadores de órdenes (`Inline`, `Streams`, `SmallMethods`, `LargeMethods`) para comparar lógica de bucles y profundidad de stack.
+* **`com.example.DispatchBenchmark.java`**: Microbenchmark JMH específico para medir el *dispatch* polimórfico.
+
+---
+
+## 🚀 Ejecución
+
+### 1. Benchmarks Manuales (Sin JMH)
+
+Para una visión rápida del impacto del JIT:
+
 ```bash
-./run_benchmark.sh        # Ejecuta benchmark normal
-./run_benchmark_jit.sh    # Benchmark con warmup y JIT
-````
+chmod +x run_benchmark.sh run_benchmark_jit.sh
+./run_benchmark.sh      # Ejecución normal
+./run_benchmark_jit.sh  # Ejecución con fase de warmup
 
-2. **JMH benchmarks**:
+```
+
+### 2. Benchmarks de Alta Precisión (JMH)
+
+Para obtener resultados estadísticamente significativos y exportar a CSV:
 
 ```bash
 cd jmh-test
 mvn clean install -P jmh
 chmod +x ../run_jmh_numbers.sh
 ../run_jmh_numbers.sh
+
 ```
 
-* Esto genera un CSV `jmh-results.csv` con los resultados de cada benchmark.
+> **Nota:** El script `run_jmh_numbers.sh` generará un archivo `jmh-results.csv` con los datos crudos para facilitar su análisis en Excel o Python.
 
 ---
 
-## Interpretación de resultados
+## 📊 Interpretación de Resultados
 
-* **Interfaces vs Concrete** → diferencia de llamadas polimórficas vs directas.
-* **Streams vs Inline Loops** → comparativa de rendimiento de loops vs streams.
-* **Small Methods vs Long Method** → muestra el coste de métodos cortos vs métodos largos.
-* **Monomorphic/Bimorphic/Megamorphic** → cuánto penaliza el dispatch polimórfico según el número de implementaciones posibles.
+* **Interfaces vs Concrete**: Observa el coste de las llamadas virtuales.
+* **Streams vs Inline Loops**: Verás que, aunque los Streams son elegantes, los loops suelen ganar en el *hot path* puro.
+* **Small Methods vs Long Method**: Analiza cómo el tamaño afecta a la decisión de la JVM de "aplanar" el código.
+* **Monomorphic / Bimorphic / Megamorphic**: El salto a *Megamorphic* suele ser el punto de ruptura donde la optimización de la JVM cae drásticamente.
 
-> Notarás que el salto de monomorphic a megamorphic es el más crítico, esto muestra cómo la JVM optimiza las llamadas virtuales y cómo la “sobreabstracción” puede impactar en hot paths.
+> [!IMPORTANT]
+> La "sobre-abstracción" en partes críticas del código (hot paths) puede degradar el rendimiento instantáneamente al impedir que la JIT aplique optimizaciones agresivas.
 
 ---
 
-## Referencias
+## 📚 Referencias
 
 * [JMH – Java Microbenchmark Harness](https://openjdk.org/projects/code-tools/jmh/)
-* Conceptos: monomorphic/bimorphic/megamorphic call sites.
-``
+* [Medium: I Removed 3 "Best Practices" From My Java App...](https://medium.com/javarevisited/i-removed-3-best-practices-from-my-java-app-performance-improved-instantly-bda04c642a5f)
+* Conceptos clave: *Monomorphic, Bimorphic y Megamorphic call sites*.
+
+---
 
